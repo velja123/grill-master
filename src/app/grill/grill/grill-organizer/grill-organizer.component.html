@@ -1,0 +1,19 @@
+<svg [attr.width]="grillWidth * scale" [attr.height]="grillLength * scale" style="border:1px solid gray">
+    <g *ngFor="let meatPiece of rounds[selectedRound]">
+        <rect  
+            [attr.x]="meatPiece.fit.x * scale"    
+            [attr.y]="meatPiece.fit.y * scale" 
+            [attr.width]="meatPiece.width * scale" 
+            [attr.height]="meatPiece.length * scale"
+            [attr.fill]="meatPiece.color"
+            style="stroke:white;stroke-width:3" 
+        />
+        <text 
+            [attr.x]="meatPiece.fit.x * scale + 15"    
+            [attr.y]="meatPiece.fit.y * scale + 15"
+            font-size="10" 
+            fill="white">
+            {{meatPiece.name}} 
+        </text>
+    </g>
+</svg>
