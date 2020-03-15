@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError, share, publishReplay } from 'rxjs/operators';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { map, catchError, first } from 'rxjs/operators';
 import { Menu } from './menu';
 import { MenuItem } from './menu-item';
 import { MeatPiece } from './meat-piece';
@@ -13,8 +13,7 @@ import { default as config } from 'src/app/shared/config';
 })
 export class GrillService {
 
-  private menus$: Observable<Menu[]>;
-  private menus: Menu[];
+  private menus: BehaviorSubject<Menu[]>;
 
   private url: string = config.grillApiUrl;
   private colors: string[] = config.colors;
@@ -22,23 +21,40 @@ export class GrillService {
   private _grillWidth: number = config.grillWidth;
 
   constructor(private http: HttpClient, private _grillPacker: PackerService) {
-    this.menus$ = this.fetchMenus();
-    this.getMenus().subscribe(data => this.menus = data);
-  }
+    this.menus = new BehaviorSubject([]);
 
-  //Return the observable 
-  getMenus(): Observable<Menu[]> {
-    return this.menus$;
-  }
-
-  //Fetch menus from the API, create a hot observable, so we do not repeat the API request on multiple subscriptions
-  private fetchMenus(): Observable<Menu[]> {
-    return this.http.get<Menu[]>(this.url)
+    //fetch data from the server
+    this.http.get<Menu[]>(this.url)
       .pipe(
         map(data => data.map(menu => this.remapMenu(menu))),
-        share(),
         catchError(this.handleError<Menu[]>('fetchMenus', [])),
-      );
+      ).subscribe(data => this.menus.next(data));
+  }
+
+  getMenus(): Observable<Menu[]> {
+    return this.menus;
+  }
+
+  getMenu(id: number): Menu {
+    return this.menus.getValue().find(x => x.id == id);
+  }
+
+  getMenuRounds(menu: Menu): MeatPiece[][] {
+    this._grillPacker.reset();
+
+    let rounds = [];
+    let leftPieces = [];
+
+    leftPieces = this.getMeatPieces(menu);
+
+    while (leftPieces.length > 0) {
+      this._grillPacker.reset();
+      this._grillPacker.fit(leftPieces);
+      rounds.push(leftPieces.filter(piece => piece.fit.used == true));
+      leftPieces = leftPieces.filter(piece => piece.fit.used == false);
+    }
+
+    return rounds;
   }
 
   private remapMenu(data): Menu {
@@ -66,28 +82,6 @@ export class GrillService {
       console.error(error);
       return of(result as T);
     };
-  }
-
-  getMenu(id: number): Menu {
-    return this.menus.find(x => x.id == id);
-  }
-
-  getMenuRounds(menu: Menu): MeatPiece[][] {
-    this._grillPacker.reset();
-
-    let rounds = [];
-    let leftPieces = [];
-
-    leftPieces = this.getMeatPieces(menu);
-           
-    while (leftPieces.length > 0) {
-      this._grillPacker.reset();
-      this._grillPacker.fit(leftPieces);
-      rounds.push(leftPieces.filter(piece => piece.fit.used == true));
-      leftPieces = leftPieces.filter(piece => piece.fit.used == false);
-    }
-
-    return rounds;
   }
 
   private getMeatPieces(menu: Menu): MeatPiece[] {

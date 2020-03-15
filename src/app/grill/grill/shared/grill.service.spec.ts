@@ -63,15 +63,14 @@ describe('GrillService', () => {
   });
 
   it('should retrieve menus from the API', () => {
+    const request = httpTestingController.expectOne('http://isol-grillassessment.azurewebsites.net/api/GrillMenu');
+    expect(request.request.method).toBe('GET');
+    request.flush(dummyMenusInput);
 
     grillService.getMenus().subscribe(menus => {
       expect(menus.length).toBe(2);
       expect(menus).toEqual(dummyMenusOutput);
     });
-
-    const request = httpTestingController.expectOne('http://isol-grillassessment.azurewebsites.net/api/GrillMenu');
-    expect(request.request.method).toBe('GET');
-    request.flush(dummyMenusInput);
   });
 
   it('should retrieve packed menu rounds', () => {
