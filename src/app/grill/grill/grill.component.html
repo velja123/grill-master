@@ -1,0 +1,10 @@
+<div style="text-align: center;">
+    <button routerLink="">Home</button>
+    <br>
+    <app-menu-selector [menus]="menus" (selectedMenuEvent)="onSelectMenu($event)"></app-menu-selector>
+    <br>
+    <app-round-selector [totalRounds]="rounds.length" [selectedRound]="selectedRound"
+        (selectedRoundEvent)="onSelectRound($event)"></app-round-selector>
+    <br>
+    <app-grill-organizer [rounds]="rounds" [selectedRound]="selectedRound"></app-grill-organizer>
+</div>

@@ -1,0 +1,5 @@
+<div *ngIf="totalRounds > 0">
+    <button (click)="previousRound()">previousRound</button>
+    <span> Round : {{selectedRound+1}} / {{totalRounds}} </span>
+    <button (click)="nextRound()">nextRound</button>
+</div>

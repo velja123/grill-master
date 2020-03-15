@@ -1,0 +1,6 @@
+<mat-form-field>
+    <mat-label>Please select a menu :</mat-label>
+    <mat-select [(value)]="selectedMenuId" (selectionChange)="onSelectMenuEvent()">
+        <mat-option *ngFor="let menu of menus | sort:'menu'" value={{menu.id}}>{{menu.menu}}</mat-option>
+    </mat-select>
+</mat-form-field>
